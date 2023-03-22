@@ -14,6 +14,7 @@ name: cd-netwithmongo
       - ci-netwithmongo
     branches:
       - main
+      - main
     paths:
       - '**/netwithmongo/**'
     types:
@@ -32,6 +33,19 @@ jobs:
           echo ENVIRONMENT=Env>> $GITHUB_ENV
           echo "RUN_NUMBER=${{github.event.workflow_run.run_number}}" >> $GITHUB_ENV
           echo "BRANCH_NAME=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+      - if: |
+          github.event.inputs.environment == '' && contains(github.event.workflow_run.head_branch, 'main')
+        name: Set Env env
+        run: |-
+          echo ENVIRONMENT=Env>> $GITHUB_ENV
+          echo "RUN_NUMBER=${{github.event.workflow_run.run_number}}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+      - if: |
+          github.event.inputs.environment == 'Env'
+        run: |
+          echo ENVIRONMENT=Env>> $GITHUB_ENV
+          echo "RUN_NUMBER=${{github.event.inputs.run_number}}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
       - if: |
           github.event.inputs.environment == 'Env'
         run: |
@@ -66,6 +80,6 @@ jobs:
       - name: deploy
         uses: azure/webapps-deploy@v2
         with:
-          app-name: app-rapidx-cicd-dotnetmongodb
-          publish-profile: ${{ secrets.ENV_AZURE_APP_RAPIDX_CICD_DOTNETMONGODB_PUBLISH_PROFILE }}
+          app-name: app-rapidx-cicd-react
+          publish-profile: ${{ secrets.ENV_AZURE_APP_RAPIDX_CICD_REACT_PUBLISH_PROFILE }}
           images: ${{ secrets.CR_LOGIN_SERVER }}/${{ env.REPOSITORY_NAME }}:${{needs.set-environment.outputs.run_number}}
